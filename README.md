@@ -1,45 +1,34 @@
-# Challenge : Action Server Navigation (ROS 2) 📍
+# Challenge : Publisher Silencieux (Debugging) 🛠️
 
-Ce projet implémente un **Action Server** sous ROS 2 Jazzy. Contrairement aux services classiques (requête/réponse), les actions sont conçues pour des processus asynchrones longs, offrant un suivi de progression (Feedback) et un résultat final.
+Ce projet est un exercice de débogage sous **ROS 2 Jazzy**. L'objectif était d'identifier et de corriger trois erreurs critiques dans un nœud Python qui empêchaient la publication correcte des messages sur le topic `/robot/status`.
 
-## 🎯 Objectifs du Challenge
-- Implémenter un serveur d'action utilisant l'interface `nav2_msgs/action/NavigateToPose`.
-- Simuler un déplacement robotique avec calcul de distance restante.
-- Envoyer des **feedbacks** périodiques au client pour monitorer la progression.
+## 🎯 Le Challenge
+Le code initial contenait des erreurs de syntaxe et de logique courantes lors du développement avec `rclpy`. Ce dépôt contient la version corrigée et fonctionnelle.
 
-## ⚙️ Fonctionnement
-Le serveur écoute sur l'action `navigate_to_target`. Une fois un objectif reçu :
-1. Il entame une simulation de mouvement de 10 secondes.
-2. Chaque seconde, il publie la distance restante (`distance_remaining`).
-3. Il valide l'objectif une fois la destination "atteinte".
+### 🔍 Bugs Identifiés & Corrigés :
+1.  **Inversion des arguments** : La méthode `create_publisher` nécessite le type de message (`String`) en premier argument, puis le nom du topic.
+2.  **Instanciation de message** : Correction de l'instanciation de l'objet `String()` (parenthèses manquantes).
+3.  **Appel de la méthode publish** : Passage correct de l'objet message à la fonction `self.pub.publish(msg)`.
 
-## 🛠 Installation & Build
+## 🛠 Compilation et Test
 ```bash
+# Compiler le package
 cd ~/ros2_ws
-colcon build --packages-select action_navigation
+colcon build --packages-select publisher_silencieux
 source install/setup.bash
+
+# Lancer le nœud
+ros2 run publisher_silencieux status_node
 ```
 
-## 🚀 Utilisation
-
-### Lancer le Serveur d'Action
+## 🚀 Vérification du fonctionnement
+Pour confirmer que le nœud n'est plus "silencieux", utilisez la commande suivante :
 ```bash
-ros2 run action_navigation nav_server
+ros2 topic echo /robot/status
 ```
-
-### Envoyer un objectif (Client Terminal)
-Ouvrez un autre terminal et envoyez une commande de navigation :
-```bash
-ros2 action send_goal /navigate_to_target nav2_msgs/action/NavigateToPose "{pose: {header: {frame_id: 'map'}}}" --feedback
-```
-*L'option `--feedback` vous permet de voir la distance diminuer en temps réel dans votre terminal.*
-
-## 📝 Concepts Clés
-- **Goal Service** : Gestion de l'acceptation ou du refus de l'objectif.
-- **Feedback** : Publication de données intermédiaires (progression).
-- **Result** : Notification de la fin de la tâche.
+*Vous devriez voir le message "OK" s'afficher toutes les secondes.*
 
 ---
 **Développeur :** Maria Lagab  
 **Spécialité :** Robotique et Système Intelligent  
-**Machine :** Dell Latitude 7400
+**Système :** Ubuntu 24.04 | Dell Latitude 7400
